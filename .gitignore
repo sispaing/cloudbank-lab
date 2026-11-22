@@ -1,0 +1,25 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Personal values (my IP, key name)
+*.tfvars
+*.tfvars.json
+
+# fake-service binary, uploaded to S3 by Terraform
+bin/
+
+# SSH keys
+*.pem
+
+# macOS
+.DS_Store
+
+tfplan
+*.tfplan

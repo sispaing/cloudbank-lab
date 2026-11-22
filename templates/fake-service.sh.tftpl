@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+# retry because the s3 endpoint may not be ready when the instance boots
+for attempt in $(seq 1 30); do
+  if curl -fsS -o /home/ubuntu/fake-service "${binary_url}"; then
+    break
+  fi
+  sleep 10
+done
+
+chmod +x /home/ubuntu/fake-service
+chown ubuntu:ubuntu /home/ubuntu/fake-service
+
+cat > /etc/systemd/system/fake.service <<EOF
+[Unit]
+Description=fake-service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+ExecStart=/home/ubuntu/fake-service
+Environment=LISTEN_ADDR=0.0.0.0:${port}
+Environment=NAME=${name}
+Environment="MESSAGE=${message}"
+%{ if upstream != "" ~}
+Environment=UPSTREAM_URIS=${upstream}
+%{ endif ~}
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+systemctl daemon-reload
+systemctl enable --now fake
